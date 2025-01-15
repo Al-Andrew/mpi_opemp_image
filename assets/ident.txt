@@ -1,0 +1,4 @@
+hflip
+invert
+invert
+hflip

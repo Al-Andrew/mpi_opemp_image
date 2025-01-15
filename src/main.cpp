@@ -2,9 +2,8 @@
 #include <cstdio>
 #include <exception>
 #include <iostream>
-#include <functional>
-#include <vector>
 #include <fstream>
+#include <chrono>
 
 // MPI header
 #include <mpi.h>
@@ -75,8 +74,8 @@ void run_operations_worker(int full_width, int full_height, std::vector<Operatio
 
 
 void main_worker(int rank, int size, std::string const& image_path, std::string const& pipeline_path) {
-    std::cout << "Image path: " << image_path << std::endl;
-    std::cout << "Pipeline: " << pipeline_path << std::endl;
+    // std::cout << "Image path: " << image_path << std::endl;
+    // std::cout << "Pipeline: " << pipeline_path << std::endl;
 
     std::vector<OperationType> ops = parse_pipeline(pipeline_path);
     
@@ -87,6 +86,11 @@ void main_worker(int rank, int size, std::string const& image_path, std::string 
         std::terminate();
     }
     Defer free_img([img](){ stbi_image_free(img); });
+
+
+    // seens fair to also measure the time to send metadata
+    auto start = std::chrono::high_resolution_clock::now();
+
     
     // Send pipeline data
     int ops_size = ops.size();
@@ -99,6 +103,11 @@ void main_worker(int rank, int size, std::string const& image_path, std::string 
 
     // Run operations
     run_operations_main(img, full_width, full_height, ops, rank, size);
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    auto time_in_s = std::chrono::duration<double>(end - start).count();
+
+    printf("Image: %dx%d, Pipeline: %s, PipelineSize: %d, Time: %f\n", full_width, full_height, pipeline_path.c_str(), ops_size, time_in_s);
 
     stbi_write_png("output.png", full_width, full_height, 4, img, 0);
 }

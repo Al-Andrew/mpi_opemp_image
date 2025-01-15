@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <omp.h>
 
 #include "operations.hpp"
 
@@ -17,6 +18,7 @@ void hflip_main(Color* image, int width, int height, Color* output, int this_wor
     }
 
     // Flip the colors in the main worker's portion
+    #pragma omp parallel for schedule(runtime)
     for (int32_t y = 0; y < rows_per_worker; ++y) {
         for (int32_t x = 0; x < width; ++x) {
             output[y * width + x] = image[y * width + (width - x - 1)];;
@@ -45,6 +47,7 @@ void hflip_worker(int width, int height, int this_worker, int worker_count) {
     MPI_Recv(local_image, num_rows * width * sizeof(Color), MPI_BYTE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     // Flip the colors in the worker's portion
+    #pragma omp parallel for schedule(runtime)
     for (int32_t y = 0; y < num_rows; ++y) {
         for (int32_t x = 0; x < width; ++x) {
             local_output[y * width + x] = local_image[y * width + (width - x - 1)];

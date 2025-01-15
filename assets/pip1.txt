@@ -1,5 +1,0 @@
-hflip
-invert
-#invert
-#hflip
-blur

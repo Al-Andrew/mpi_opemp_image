@@ -31,6 +31,7 @@ void blur_main(Color* image, int width, int height, Color* output, int this_work
     }
 
     // Blur the colors in the main worker's portion
+    #pragma omp parallel for schedule(runtime)
     for (int32_t y = 0; y < rows_per_worker; ++y) {
         for (int32_t x = 0; x < width; ++x) {
             int32_t rsum = 0;
@@ -105,6 +106,7 @@ void blur_worker(int width, int height, int this_worker, int worker_count) {
     MPI_Recv(local_image, num_rows * width * sizeof(Color), MPI_BYTE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     // Blur the colors in the worker's portion
+    #pragma omp parallel for schedule(runtime)
     for (int32_t y = 1; y < num_rows - 1; ++y) { // Exclude the overlap rows
         for (int32_t x = 0; x < width; ++x) {
             int32_t rsum = 0;
