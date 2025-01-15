@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-std=c++20, -Wall, -Wextra, -Werror, -pedantic, -Og, -ggdb, -I/usr/lib/x86_64-linux-gnu/openmpi/include/]
